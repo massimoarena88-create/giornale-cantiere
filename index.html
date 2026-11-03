@@ -1,0 +1,734 @@
+<!doctype html><html lang="it"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#1F3A5F"><link rel="manifest" href="manifest.webmanifest"><link rel="icon" href="icon-192.png">
+<style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
+<title>Giornale di Cantiere DL</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Barlow:wght@400;500;600&display=swap">
+<style>
+/* Layout: one tablet-width column of numbered sheets mirroring the paper form; sticky action bar at the bottom. */
+:root{
+  --ink:#1F3A5F; --ink-soft:#4A5E78; --paper:#F3F5F8; --sheet:#FFFFFF; --line:#C9D2DD; --tint:#E4EBF3;
+  --vis:#E8650F; --vis-ink:#FFFFFF; --ok:#1E7A4C; --muted:#6B7A8C; --field:#FFFFFF; --text:#17212E;
+  --display:"Barlow Condensed","Arial Narrow",Arial,sans-serif; --body:"Barlow",system-ui,-apple-system,"Segoe UI",sans-serif;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --ink:#9DB8DA; --ink-soft:#8EA1B8; --paper:#0F1620; --sheet:#17212E; --line:#2E3C4E; --tint:#1F2C3C;
+  --vis:#F07A2A; --vis-ink:#140A02; --ok:#4CC28A; --muted:#8C9AAB; --field:#111A25; --text:#E6ECF3; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --ink:#9DB8DA; --ink-soft:#8EA1B8; --paper:#0F1620; --sheet:#17212E; --line:#2E3C4E; --tint:#1F2C3C;
+  --vis:#F07A2A; --vis-ink:#140A02; --ok:#4CC28A; --muted:#8C9AAB; --field:#111A25; --text:#E6ECF3; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--paper);color:var(--text);font:16px/1.4 var(--body)}
+.wrap{max-width:980px;margin:0 auto;padding-inline:16px;padding-block:20px 120px;display:flex;flex-direction:column;gap:14px}
+header.top{display:grid;grid-template-columns:1fr auto;gap:12px;align-items:end}
+h1{font:700 2rem/1 var(--display);letter-spacing:.01em;color:var(--ink);margin:0;text-transform:uppercase;text-wrap:balance}
+.sub{color:var(--muted);font-size:.9rem;margin-top:4px}
+.status{font-size:.85rem;color:var(--muted);text-align:right;min-height:1.2em}
+.sheet{background:var(--sheet);border:1px solid var(--line);border-radius:6px;overflow:hidden}
+.sheet>h2{margin:0;background:var(--ink);color:var(--sheet);font:600 1.15rem/1 var(--display);letter-spacing:.06em;text-transform:uppercase;padding:9px 14px;display:flex;gap:10px;align-items:baseline}
+.sheet>h2 small{font:400 .78rem var(--body);letter-spacing:0;text-transform:none;opacity:.8}
+.body{padding:14px;display:flex;flex-direction:column;gap:14px}
+.grid{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(min(100%,210px),1fr))}
+.grid.g3{grid-template-columns:repeat(auto-fit,minmax(min(100%,150px),1fr))}
+label.f{display:flex;flex-direction:column;gap:4px;min-width:0}
+.lab{font-size:.74rem;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-soft)}
+input,textarea,select{font:inherit;color:var(--text);background:var(--field);border:1px solid var(--line);border-radius:4px;padding:10px 11px;min-height:46px;width:100%}
+textarea{min-height:92px;resize:vertical}
+input:focus-visible,textarea:focus-visible,button:focus-visible{outline:3px solid var(--vis);outline-offset:1px}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{font:500 .95rem var(--body);border:1px solid var(--line);background:var(--field);color:var(--text);border-radius:999px;padding:9px 14px;min-height:44px;cursor:pointer;display:inline-flex;align-items:center;gap:8px}
+.chip::before{content:"";width:14px;height:14px;border:1.5px solid var(--ink-soft);border-radius:3px;flex:none}
+.chip[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:var(--sheet)}
+.chip[aria-pressed="true"]::before{background:var(--vis);border-color:var(--vis)}
+.chips.single .chip::before{border-radius:50%}
+.group{display:flex;flex-direction:column;gap:8px;min-width:0}
+.rows{display:flex;flex-direction:column;gap:10px}
+.row{border:1px solid var(--line);border-radius:5px;padding:10px;display:grid;gap:10px;grid-template-columns:repeat(auto-fit,minmax(min(100%,140px),1fr));position:relative;background:var(--sheet)}
+.row .n{position:absolute;top:-10px;left:10px;background:var(--sheet);padding:0 6px;font:700 .85rem var(--display);color:var(--ink-soft)}
+.row .wide{grid-column:span 2}
+@media (max-width:520px){.row .wide{grid-column:auto}}
+.btn{font:600 1rem var(--body);border-radius:5px;border:1px solid var(--line);background:var(--field);color:var(--text);padding:10px 16px;min-height:46px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:8px}
+.btn.primary{background:var(--vis);border-color:var(--vis);color:var(--vis-ink)}
+.btn.ghost{background:transparent}
+.btn.danger{color:#C0392B;border-color:#C0392B}
+.btn.small{min-height:38px;padding:6px 12px;font-size:.9rem}
+.btn:disabled{opacity:.55;cursor:default}
+.tot{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;font-weight:600}
+.tot b{font:700 1.6rem var(--display);color:var(--ink);font-variant-numeric:tabular-nums}
+.sigs{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(min(100%,280px),1fr))}
+.sig{display:flex;flex-direction:column;gap:8px;min-width:0}
+.pad{position:relative;border:1.5px dashed var(--ink-soft);border-radius:5px;background:#FFFFFF;height:150px;touch-action:none}
+.pad canvas{width:100%;height:100%;display:block;border-radius:5px}
+.pad .hint{position:absolute;inset:auto 0 8px 0;text-align:center;color:#9AA5B2;font-size:.85rem;pointer-events:none}
+.pad .base{position:absolute;left:12px;right:12px;bottom:30px;border-bottom:1px solid #C9D2DD;pointer-events:none}
+.photos{display:grid;gap:12px;grid-template-columns:repeat(auto-fill,minmax(min(100%,210px),1fr))}
+.ph{border:1px solid var(--line);border-radius:5px;overflow:hidden;display:flex;flex-direction:column;background:var(--sheet)}
+.ph img{width:100%;aspect-ratio:4/3;object-fit:cover;display:block;background:var(--tint)}
+.ph .cap{padding:8px;display:flex;flex-direction:column;gap:6px}
+.ph .cap input{min-height:40px;padding:7px 9px}
+.ph .meta{display:flex;justify-content:space-between;align-items:center;font:700 .9rem var(--display);color:var(--ink-soft)}
+.empty{border:1.5px dashed var(--line);border-radius:5px;padding:18px;text-align:center;color:var(--muted)}
+.bar{position:fixed;left:0;right:0;bottom:0;background:var(--sheet);border-top:1px solid var(--line);padding:10px 16px calc(10px + env(safe-area-inset-bottom,0px));z-index:5}
+.bar .in{max-width:980px;margin:0 auto;display:flex;gap:10px;flex-wrap:wrap;justify-content:flex-end;align-items:center}
+.bar .msg{margin-right:auto;font-size:.9rem;color:var(--muted);min-width:0}
+.bar .msg.err{color:#C0392B}
+.bar .msg.ok{color:var(--ok)}
+.pct{display:flex;align-items:center;gap:6px}
+.pct input{text-align:right;font-variant-numeric:tabular-nums}
+.hide-file{position:absolute;width:1px;height:1px;opacity:0;pointer-events:none}
+@media (prefers-reduced-motion:no-preference){.chip,.btn{transition:background .12s,border-color .12s}}
+</style>
+
+</head><body>
+<div class="wrap">
+  <header class="top">
+    <div>
+      <h1>Giornale di Cantiere</h1>
+      <div class="sub">Direzione Lavori · registrazione giornaliera. La bozza si salva da sola su questo tablet. Funziona anche senza internet.</div>
+    </div>
+    <div class="status" id="saved"></div>
+  </header>
+
+  <section class="sheet">
+    <h2>Intestazione</h2>
+    <div class="body"><div class="grid g3">
+      <label class="f"><span class="lab">N. progressivo</span><input id="prog" data-k="prog" inputmode="numeric"></label>
+      <label class="f"><span class="lab">Data</span><input id="data" data-k="data" type="date"></label>
+      <label class="f"><span class="lab">Giorno lavorativo n.</span><input id="giorno" data-k="giorno" inputmode="numeric"></label>
+    </div></div>
+  </section>
+
+  <section class="sheet">
+    <h2>1 · Dati generali <small>restano compilati anche nel giornale successivo</small></h2>
+    <div class="body">
+      <div class="grid">
+        <label class="f"><span class="lab">Commessa</span><input id="commessa" data-k="commessa" placeholder="es. 25121-ANTGN2"></label>
+        <label class="f"><span class="lab">Cantiere / indirizzo</span><input id="cantiere" data-k="cantiere"></label>
+        <label class="f"><span class="lab">Committente</span><input id="committente" data-k="committente"></label>
+        <label class="f"><span class="lab">Impresa affidataria</span><input id="impresa" data-k="impresa"></label>
+        <label class="f"><span class="lab">Direttore Lavori</span><input id="dl" data-k="dl"></label>
+        <label class="f"><span class="lab">CSE</span><input id="cse" data-k="cse"></label>
+      </div>
+      <div class="grid">
+        <label class="f"><span class="lab">Sopralluogo dalle ore</span><input id="oraDa" data-k="oraDa" type="time"></label>
+        <label class="f"><span class="lab">alle ore</span><input id="oraA" data-k="oraA" type="time"></label>
+        <label class="f" style="grid-column:span 2"><span class="lab">Presenti al sopralluogo</span><input id="presenti" data-k="presenti"></label>
+      </div>
+      <div class="group"><span class="lab">Meteo</span><div class="chips" data-k="meteo" data-opts="Sereno|Nuvoloso|Pioggia|Neve|Vento"></div></div>
+      <div class="grid g3">
+        <label class="f"><span class="lab">T° min (°C)</span><input id="tmin" data-k="tmin" inputmode="decimal"></label>
+        <label class="f"><span class="lab">T° max (°C)</span><input id="tmax" data-k="tmax" inputmode="decimal"></label>
+      </div>
+      <div class="group"><span class="lab">Andamento lavori</span><div class="chips single" data-k="andamento" data-opts="Lavori regolari|Rallentati|Sospesi per maltempo|Sospesi per altra causa"></div>
+        <input id="andamentoCausa" data-k="andamentoCausa" placeholder="Causa della sospensione o del rallentamento"></div>
+    </div>
+  </section>
+
+  <section class="sheet">
+    <h2>2 · Presenze in cantiere e mezzi</h2>
+    <div class="body">
+      <div class="rows" id="presenzeRows"></div>
+      <div class="tot"><button class="btn small" id="addPres" type="button">+ Aggiungi impresa</button><span>Totale personale presente&nbsp; <b id="totOp">0</b></span></div>
+    </div>
+  </section>
+
+  <section class="sheet">
+    <h2>3 · Attività in corso</h2>
+    <div class="body">
+      <div class="chips" data-k="attivita" data-opts="Demolizioni|Opere edili|Cartongessi|Pavimentazioni|Serramenti|Impianti elettrici|Impianti meccanici|Tinteggiature|Sistemazioni esterne|Altro"></div>
+      <input id="attivitaAltro" data-k="attivitaAltro" placeholder="Altro: specificare">
+      <label class="f"><span class="lab">Descrizione attività svolte (impresa · lavorazione · zona/piano)</span><textarea id="descrizione" data-k="descrizione" rows="4"></textarea></label>
+      <label class="f"><span class="lab">Forniture / materiali giunti in cantiere (materiale · fornitore · DDT)</span><textarea id="forniture" data-k="forniture" rows="2"></textarea></label>
+    </div>
+  </section>
+
+  <section class="sheet">
+    <h2>4 · Verifiche della Direzione Lavori</h2>
+    <div class="body">
+      <div class="grid">
+        <div class="group"><span class="lab">Conformità al progetto</span><div class="chips single" data-k="conformita" data-opts="Conforme|Conforme con osservazioni|Non conforme"></div><textarea id="confNote" data-k="confNote" rows="2" placeholder="Note"></textarea></div>
+        <div class="group"><span class="lab">Materiali verificati</span><div class="chips single" data-k="materiali" data-opts="Conformi|Non conformi|Non verificati"></div><textarea id="matNote" data-k="matNote" rows="2" placeholder="Materiali controllati"></textarea></div>
+        <div class="group"><span class="lab">Sicurezza cantiere</span><div class="chips single" data-k="sicurezza" data-opts="Regolare|Da migliorare|Criticità rilevate"></div><textarea id="sicNote" data-k="sicNote" rows="2" placeholder="Osservazioni"></textarea></div>
+      </div>
+      <div class="group"><span class="lab">Eventi del giorno</span><div class="chips" data-k="eventi" data-opts="Prove / campionature|Ordine di servizio|Variante / modifica|Visita ispettiva|Infortunio / quasi-infortunio"></div>
+        <input id="odsN" data-k="odsN" placeholder="Ordine di servizio n." style="max-width:260px"></div>
+    </div>
+  </section>
+
+  <section class="sheet">
+    <h2>5 · Criticità, non conformità e disposizioni</h2>
+    <div class="body">
+      <div class="group"><span class="lab">Richieste all'impresa</span><div class="chips" data-k="richieste" data-opts="Fornire documentazione tecnica|Correggere lavorazione|Aggiornare cronoprogramma|Integrare personale|Altro"></div></div>
+      <div class="rows" id="critRows"></div>
+      <div><button class="btn small" id="addCrit" type="button">+ Aggiungi criticità</button></div>
+    </div>
+  </section>
+
+  <section class="sheet">
+    <h2>6 · Avanzamento lavori · 7 · Prossimo sopralluogo</h2>
+    <div class="body">
+      <div class="grid g3">
+        <label class="f"><span class="lab">Opere edili %</span><input id="avEdili" data-k="avEdili" inputmode="numeric"></label>
+        <label class="f"><span class="lab">Impianti %</span><input id="avImp" data-k="avImp" inputmode="numeric"></label>
+        <label class="f"><span class="lab">Finiture %</span><input id="avFin" data-k="avFin" inputmode="numeric"></label>
+        <label class="f"><span class="lab">Complessivo %</span><input id="avTot" data-k="avTot" inputmode="numeric"></label>
+      </div>
+      <div class="group"><span class="lab">Stato rispetto al cronoprogramma</span><div class="chips single" data-k="stato" data-opts="In linea|In anticipo|In ritardo"></div>
+        <input id="ritardoGg" data-k="ritardoGg" inputmode="numeric" placeholder="Giorni di ritardo" style="max-width:220px"></div>
+      <div class="grid">
+        <label class="f"><span class="lab">Prossimo sopralluogo: data prevista</span><input id="prossData" data-k="prossData" type="date"></label>
+        <label class="f" style="grid-column:span 2"><span class="lab">Attività da verificare (una per riga)</span><textarea id="prossAtt" data-k="prossAtt" rows="3"></textarea></label>
+      </div>
+      <div class="group"><span class="lab">Allegati</span><div class="chips" data-k="allegati" data-opts="Foto|Verbali|Altro"></div>
+        <input id="allegatiAltro" data-k="allegatiAltro" placeholder="Altro allegato"></div>
+    </div>
+  </section>
+
+  <section class="sheet">
+    <h2>Documentazione fotografica <small>finiscono nell'allegato del PDF, 6 per pagina</small></h2>
+    <div class="body">
+      <div style="display:flex;gap:10px;flex-wrap:wrap">
+        <label class="btn primary" for="camIn">Scatta foto</label>
+        <label class="btn" for="galIn">Scegli dalla galleria</label>
+        <input class="hide-file" id="camIn" type="file" accept="image/*" capture="environment">
+        <input class="hide-file" id="galIn" type="file" accept="image/*" multiple>
+      </div>
+      <div class="photos" id="photos"></div>
+    </div>
+  </section>
+
+  <section class="sheet">
+    <h2>Annotazioni integrative</h2>
+    <div class="body"><textarea id="note2" data-k="note2" rows="3" placeholder="Note che non trovano posto nelle sezioni precedenti"></textarea></div>
+  </section>
+
+  <section class="sheet">
+    <h2>8 · Firme <small>firma con il dito o con la penna del tablet</small></h2>
+    <div class="body"><div class="sigs" id="sigs"></div></div>
+  </section>
+</div>
+
+<div class="bar"><div class="in">
+  <span class="msg" id="msg"></span>
+  <button class="btn ghost" id="newBtn" type="button">Nuovo giornale</button>
+  <button class="btn" id="shareBtn" type="button" hidden>Condividi PDF</button>
+  <button class="btn primary" id="expBtn" type="button">Esporta PDF</button>
+</div></div>
+
+<script src="jspdf.umd.min.js"></script>
+<script>
+(() => {
+const $ = (s) => document.querySelector(s);
+const today = () => new Date().toISOString().slice(0, 10);
+const blankPres = () => ({ impresa: "", referente: "", operai: "", qualifica: "", ore: "", mezzi: "" });
+const blankCrit = () => ({ descr: "", azione: "", cura: "", scad: "", chiusa: false });
+const SIGS = [["dl", "Il Direttore dei Lavori"], ["imp", "Il Referente dell'Impresa"], ["vis", "Per presa visione (CSE / Committente)"]];
+const KEEP = ["commessa", "cantiere", "committente", "impresa", "dl", "cse"];
+
+function fresh(prev) {
+  const s = {
+    prog: "1", data: today(), giorno: "", oraDa: "", oraA: "", presenti: "",
+    commessa: "", cantiere: "", committente: "", impresa: "", dl: "", cse: "",
+    meteo: [], tmin: "", tmax: "", andamento: "", andamentoCausa: "",
+    presenze: [blankPres(), blankPres(), blankPres()],
+    attivita: [], attivitaAltro: "", descrizione: "", forniture: "",
+    conformita: "", confNote: "", materiali: "", matNote: "", sicurezza: "", sicNote: "", eventi: [], odsN: "",
+    richieste: [], criticita: [blankCrit()],
+    avEdili: "", avImp: "", avFin: "", avTot: "", stato: "", ritardoGg: "", prossData: "", prossAtt: "", allegati: [], allegatiAltro: "",
+    note2: "", foto: [], firme: { dl: null, imp: null, vis: null }, nomi: { dl: "", imp: "", vis: "" },
+  };
+  if (prev) {
+    KEEP.forEach((k) => (s[k] = prev[k] || ""));
+    s.prog = String((parseInt(prev.prog, 10) || 0) + 1);
+    s.giorno = prev.giorno ? String((parseInt(prev.giorno, 10) || 0) + 1) : "";
+    s.presenze = (prev.presenze || []).filter((p) => p.impresa).map((p) => ({ ...blankPres(), impresa: p.impresa, referente: p.referente }));
+    while (s.presenze.length < 3) s.presenze.push(blankPres());
+    s.nomi = { ...prev.nomi };
+    ["avEdili", "avImp", "avFin", "avTot"].forEach((k) => (s[k] = prev[k] || ""));
+  }
+  return s;
+}
+let S = fresh();
+
+/* ---------- storage (IndexedDB, falls back to memory only) ---------- */
+const DB = { db: null };
+function idb() {
+  return new Promise((res) => {
+    try {
+      const r = indexedDB.open("giornale-cantiere", 1);
+      r.onupgradeneeded = () => r.result.createObjectStore("kv");
+      r.onsuccess = () => res((DB.db = r.result));
+      r.onerror = () => res(null);
+    } catch { res(null); }
+  });
+}
+function idbGet(k) { return new Promise((res) => { try { const q = DB.db.transaction("kv").objectStore("kv").get(k); q.onsuccess = () => res(q.result); q.onerror = () => res(null); } catch { res(null); } }); }
+function idbSet(k, v) { return new Promise((res) => { try { const t = DB.db.transaction("kv", "readwrite"); t.objectStore("kv").put(v, k); t.oncomplete = () => res(true); t.onerror = () => res(false); } catch { res(false); } }); }
+let saveT;
+function save() {
+  clearTimeout(saveT);
+  saveT = setTimeout(async () => {
+    const ok = DB.db && (await idbSet("draft", JSON.parse(JSON.stringify(S))));
+    $("#saved").textContent = ok ? "Bozza salvata alle " + new Date().toLocaleTimeString("it-IT", { hour: "2-digit", minute: "2-digit" }) : "Bozza non salvabile su questo dispositivo";
+  }, 400);
+}
+
+/* ---------- binding ---------- */
+function bindInputs() {
+  document.querySelectorAll("[data-k]").forEach((el) => {
+    const k = el.dataset.k;
+    if (el.classList.contains("chips")) return;
+    el.value = S[k] ?? "";
+    el.oninput = () => { S[k] = el.value; save(); };
+  });
+  document.querySelectorAll(".chips[data-k]").forEach((box) => {
+    const k = box.dataset.k, single = box.classList.contains("single");
+    box.innerHTML = "";
+    box.dataset.opts.split("|").forEach((o) => {
+      const b = document.createElement("button");
+      b.type = "button"; b.className = "chip"; b.textContent = o;
+      const on = () => (single ? S[k] === o : (S[k] || []).includes(o));
+      b.setAttribute("aria-pressed", on());
+      b.onclick = () => {
+        if (single) S[k] = S[k] === o ? "" : o;
+        else S[k] = on() ? S[k].filter((x) => x !== o) : [...(S[k] || []), o];
+        box.querySelectorAll(".chip").forEach((c) => c.setAttribute("aria-pressed", single ? S[k] === c.textContent : S[k].includes(c.textContent)));
+        save();
+      };
+      box.appendChild(b);
+    });
+  });
+}
+
+function field(label, val, on, opts = {}) {
+  const l = document.createElement("label"); l.className = "f" + (opts.wide ? " wide" : "");
+  l.innerHTML = `<span class="lab"></span>`; l.firstChild.textContent = label;
+  const i = document.createElement("input"); i.value = val || ""; if (opts.mode) i.inputMode = opts.mode; if (opts.type) i.type = opts.type; if (opts.ph) i.placeholder = opts.ph;
+  i.oninput = () => { on(i.value); save(); };
+  l.appendChild(i); return l;
+}
+function delBtn(fn) { const b = document.createElement("button"); b.type = "button"; b.className = "btn small ghost"; b.textContent = "Rimuovi"; b.onclick = fn; return b; }
+
+function renderPres() {
+  const box = $("#presenzeRows"); box.innerHTML = "";
+  S.presenze.forEach((p, i) => {
+    const r = document.createElement("div"); r.className = "row";
+    r.innerHTML = `<span class="n">Impresa ${i + 1}</span>`;
+    r.append(
+      field("Impresa / subappaltatore", p.impresa, (v) => (p.impresa = v), { wide: true }),
+      field("Referente", p.referente, (v) => (p.referente = v)),
+      field("N. operai", p.operai, (v) => { p.operai = v; tot(); }, { mode: "numeric" }),
+      field("Qualifica S/Q/C", p.qualifica, (v) => (p.qualifica = v), { ph: "es. 2S 1C" }),
+      field("Ore", p.ore, (v) => (p.ore = v), { mode: "decimal" }),
+      field("Mezzi e attrezzature", p.mezzi, (v) => (p.mezzi = v), { wide: true }),
+    );
+    if (S.presenze.length > 1) r.append(delBtn(() => { S.presenze.splice(i, 1); renderPres(); save(); }));
+    box.appendChild(r);
+  });
+  tot();
+}
+function tot() { $("#totOp").textContent = S.presenze.reduce((a, p) => a + (parseFloat(p.operai) || 0), 0); }
+
+function renderCrit() {
+  const box = $("#critRows"); box.innerHTML = "";
+  S.criticita.forEach((c, i) => {
+    const r = document.createElement("div"); r.className = "row";
+    r.innerHTML = `<span class="n">N. ${i + 1}</span>`;
+    const ch = document.createElement("button"); ch.type = "button"; ch.className = "chip"; ch.textContent = "Chiusa";
+    ch.setAttribute("aria-pressed", !!c.chiusa); ch.onclick = () => { c.chiusa = !c.chiusa; ch.setAttribute("aria-pressed", c.chiusa); save(); };
+    const chw = document.createElement("div"); chw.style.alignSelf = "end"; chw.appendChild(ch);
+    r.append(
+      field("Criticità / non conformità", c.descr, (v) => (c.descr = v), { wide: true }),
+      field("Azione richiesta / disposizione D.L.", c.azione, (v) => (c.azione = v), { wide: true }),
+      field("A cura di", c.cura, (v) => (c.cura = v)),
+      field("Scadenza", c.scad, (v) => (c.scad = v), { type: "date" }),
+      chw,
+    );
+    if (S.criticita.length > 1) r.append(delBtn(() => { S.criticita.splice(i, 1); renderCrit(); save(); }));
+    box.appendChild(r);
+  });
+}
+
+/* ---------- photos ---------- */
+function compress(file) {
+  return new Promise((res, rej) => {
+    const url = URL.createObjectURL(file), img = new Image();
+    img.onload = () => {
+      const max = 1600, k = Math.min(1, max / Math.max(img.naturalWidth, img.naturalHeight));
+      const w = Math.round(img.naturalWidth * k), h = Math.round(img.naturalHeight * k);
+      const c = document.createElement("canvas"); c.width = w; c.height = h;
+      c.getContext("2d").drawImage(img, 0, 0, w, h);
+      URL.revokeObjectURL(url);
+      res({ src: c.toDataURL("image/jpeg", 0.8), w, h, cap: "" });
+    };
+    img.onerror = () => { URL.revokeObjectURL(url); rej(); };
+    img.src = url;
+  });
+}
+async function addFiles(files) {
+  for (const f of files) {
+    try { S.foto.push(await compress(f)); } catch { msg("Una foto non è stata letta. Riprova con un'altra immagine.", "err"); }
+  }
+  if (S.foto.length && !S.allegati.includes("Foto")) { S.allegati.push("Foto"); bindInputs(); }
+  renderPhotos(); save();
+}
+$("#camIn").onchange = (e) => { addFiles([...e.target.files]); e.target.value = ""; };
+$("#galIn").onchange = (e) => { addFiles([...e.target.files]); e.target.value = ""; };
+function renderPhotos() {
+  const box = $("#photos"); box.innerHTML = "";
+  if (!S.foto.length) { box.innerHTML = `<div class="empty">Nessuna foto. Usa «Scatta foto» per aprire la fotocamera del tablet.</div>`; return; }
+  S.foto.forEach((p, i) => {
+    const d = document.createElement("div"); d.className = "ph";
+    const im = document.createElement("img"); im.src = p.src; im.alt = "Foto " + (i + 1);
+    const cap = document.createElement("div"); cap.className = "cap";
+    const meta = document.createElement("div"); meta.className = "meta"; meta.innerHTML = `<span>Foto ${i + 1}</span>`;
+    meta.appendChild(delBtn(() => { S.foto.splice(i, 1); renderPhotos(); save(); }));
+    const inp = document.createElement("input"); inp.placeholder = "Ubicazione / descrizione"; inp.value = p.cap;
+    inp.oninput = () => { p.cap = inp.value; save(); };
+    cap.append(meta, inp); d.append(im, cap); box.appendChild(d);
+  });
+}
+
+/* ---------- signatures ---------- */
+function renderSigs() {
+  const box = $("#sigs"); box.innerHTML = "";
+  SIGS.forEach(([k, title]) => {
+    const w = document.createElement("div"); w.className = "sig";
+    w.innerHTML = `<span class="lab"></span><div class="pad"><canvas></canvas><div class="base"></div><div class="hint">Firma qui</div></div>`;
+    w.querySelector(".lab").textContent = title;
+    const pad = w.querySelector(".pad"), cv = w.querySelector("canvas"), hint = w.querySelector(".hint");
+    const name = field("Nome e cognome", S.nomi[k], (v) => (S.nomi[k] = v));
+    const clr = document.createElement("button"); clr.type = "button"; clr.className = "btn small ghost"; clr.textContent = "Cancella firma";
+    w.append(name, clr); box.appendChild(w);
+    requestAnimationFrame(() => setupPad(k, pad, cv, hint, clr));
+  });
+}
+function setupPad(k, pad, cv, hint, clr) {
+  const r = window.devicePixelRatio || 1, W = pad.clientWidth, H = pad.clientHeight;
+  cv.width = W * r; cv.height = H * r;
+  const ctx = cv.getContext("2d"); ctx.scale(r, r);
+  ctx.lineCap = "round"; ctx.lineJoin = "round"; ctx.strokeStyle = "#0E1B2C";
+  if (S.firme[k]) { const im = new Image(); im.onload = () => ctx.drawImage(im, 0, 0, W, H); im.src = S.firme[k].src; hint.hidden = true; }
+  let drawing = false, last = null;
+  const pt = (e) => { const b = cv.getBoundingClientRect(); return { x: e.clientX - b.left, y: e.clientY - b.top, p: e.pressure || 0.5 }; };
+  cv.onpointerdown = (e) => { drawing = true; cv.setPointerCapture(e.pointerId); last = pt(e); hint.hidden = true; ctx.beginPath(); ctx.arc(last.x, last.y, 1, 0, 7); ctx.fillStyle = "#0E1B2C"; ctx.fill(); };
+  cv.onpointermove = (e) => {
+    if (!drawing) return;
+    const evs = e.getCoalescedEvents ? e.getCoalescedEvents() : [e];
+    for (const ev of evs) { const p = pt(ev); ctx.lineWidth = e.pointerType === "pen" ? 1 + p.p * 2.4 : 2.2; ctx.beginPath(); ctx.moveTo(last.x, last.y); ctx.lineTo(p.x, p.y); ctx.stroke(); last = p; }
+  };
+  const end = () => { if (!drawing) return; drawing = false; S.firme[k] = { src: cv.toDataURL("image/png"), w: W, h: H }; save(); };
+  cv.onpointerup = end; cv.onpointercancel = end; cv.onpointerleave = end;
+  clr.onclick = () => { ctx.clearRect(0, 0, W, H); S.firme[k] = null; hint.hidden = false; save(); };
+}
+
+/* ---------- messages / new ---------- */
+function msg(t, kind) { const m = $("#msg"); m.textContent = t; m.className = "msg" + (kind ? " " + kind : ""); }
+let armT;
+$("#newBtn").onclick = () => {
+  const b = $("#newBtn");
+  if (!b.dataset.armed) { b.dataset.armed = "1"; b.textContent = "Tocca di nuovo per confermare"; b.classList.add("danger"); msg("Il giornale attuale verrà svuotato. Esportalo prima, se non l'hai fatto."); armT = setTimeout(disarm, 5000); return; }
+  disarm(); S = fresh(S); renderAll(); save(); msg("Nuovo giornale n. " + S.prog + " pronto. Dati generali e imprese sono stati ricopiati.", "ok"); scrollTo(0, 0);
+};
+function disarm() { clearTimeout(armT); const b = $("#newBtn"); delete b.dataset.armed; b.textContent = "Nuovo giornale"; b.classList.remove("danger"); }
+$("#addPres").onclick = () => { S.presenze.push(blankPres()); renderPres(); save(); };
+$("#addCrit").onclick = () => { S.criticita.push(blankCrit()); renderCrit(); save(); };
+function renderAll() { bindInputs(); renderPres(); renderCrit(); renderPhotos(); renderSigs(); }
+
+/* ================= PDF ================= */
+const NAVY = [31, 58, 95], LIGHT = [228, 235, 243], GRID = [138, 153, 171], GREY = [102, 102, 102];
+const PT = 0.3528, BOX = 2.5;
+const clean = (s) => String(s ?? "").replace(/[‘’‚′]/g, "'").replace(/[“”„″]/g, '"').replace(/[–—−]/g, "-").replace(/…/g, "...").replace(/[^\x09\x0A\x0D\x20-\x7E\xA0-\xFF]/g, "");
+const fmtD = (d) => (d ? d.split("-").reverse().join("/") : "");
+
+function buildPdf() {
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({ unit: "mm", format: "a4" });
+  const M = 10, CW = 190, PH = 297, BOTTOM = PH - 11;
+  let y = M;
+  const FS = 7.5, LH = FS * PT * 1.32, PX = 1.5, PY = 1.1;
+  doc.setLineWidth(0.2); doc.setDrawColor(...GRID);
+
+  // --- flow layout: pieces = {s, b, c, i} | {cb, on} | {br:1}
+  function lay(pieces, w, fs = FS) {
+    doc.setFontSize(fs);
+    const lines = []; let cur = { it: [], w: 0 };
+    const push = () => { while (cur.it.length && cur.it[cur.it.length - 1].sp) cur.w -= cur.it.pop().w; lines.push(cur); cur = { it: [], w: 0 }; };
+    const add = (it) => { if (cur.w + it.w > w && cur.it.length) { push(); if (it.sp) return; } cur.it.push(it); cur.w += it.w; };
+    for (const p of pieces) {
+      if (p.br) { push(); continue; }
+      if (p.cb !== undefined) { doc.setFont("helvetica", p.on ? "bold" : "normal"); const lab = clean(p.cb); add({ cb: lab, on: p.on, w: BOX + (lab ? 1 + doc.getTextWidth(lab) : 0) + 3, lw: lab ? doc.getTextWidth(lab) : 0 }); continue; }
+      const st = p.b ? (p.i ? "bolditalic" : "bold") : p.i ? "italic" : "normal";
+      doc.setFont("helvetica", st);
+      clean(p.s).split(/(\n|[ \t]+)/).forEach((tok) => {
+        if (!tok) return;
+        if (tok === "\n") return push();
+        if (/^[ \t]+$/.test(tok)) return add({ sp: 1, w: doc.getTextWidth(" ") });
+        add({ s: tok, st, c: p.c, w: doc.getTextWidth(tok) });
+      });
+    }
+    if (cur.it.length || !lines.length) push();
+    return lines;
+  }
+  function drawLines(lines, x, y0, w, align, fs = FS) {
+    const lh = fs * PT * 1.32;
+    doc.setFontSize(fs);
+    lines.forEach((ln, i) => {
+      let cx = align === "center" ? x + (w - ln.w) / 2 : align === "right" ? x + w - ln.w : x;
+      const base = y0 + i * lh + fs * PT * 0.98;
+      ln.it.forEach((it) => {
+        if (it.cb !== undefined) {
+          const by = base - BOX + 0.25;
+          doc.setDrawColor(...NAVY); doc.setLineWidth(0.25);
+          if (it.on) { doc.setFillColor(...NAVY); doc.rect(cx, by, BOX, BOX, "FD"); doc.setDrawColor(255, 255, 255); doc.setLineWidth(0.45); doc.line(cx + 0.5, by + 1.3, cx + 1.05, by + 1.9); doc.line(cx + 1.05, by + 1.9, cx + 2.05, by + 0.6); }
+          else doc.rect(cx, by, BOX, BOX);
+          doc.setDrawColor(...GRID); doc.setLineWidth(0.2);
+          if (it.cb) { doc.setFont("helvetica", it.on ? "bold" : "normal"); doc.setTextColor(0, 0, 0); doc.text(it.cb, cx + BOX + 1, base); }
+        } else if (!it.sp) { doc.setFont("helvetica", it.st); doc.setTextColor(...(it.c || [0, 0, 0])); doc.text(it.s, cx, base); }
+        cx += it.w;
+      });
+    });
+    doc.setTextColor(0, 0, 0);
+    return lines.length * lh;
+  }
+  function newPage() {
+    doc.addPage(); y = M;
+    doc.setFont("helvetica", "bold"); doc.setFontSize(8); doc.setTextColor(...NAVY);
+    doc.text(clean(`GIORNALE DI CANTIERE n. ${S.prog || "-"} del ${fmtD(S.data)} (segue)`), M, y + 3);
+    doc.setTextColor(0, 0, 0); y += 6;
+  }
+  const ensure = (h) => { if (y + h > BOTTOM) newPage(); };
+
+  // cells: {w, p, fill, al, v:'top'|'mid', img}
+  function row(cells, minH = 0) {
+    const L = cells.map((c) => (c.p ? lay(c.p, c.w - 2 * PX) : []));
+    const h = Math.max(minH, ...L.map((l) => l.length * LH + 2 * PY));
+    ensure(h);
+    let x = M;
+    cells.forEach((c, i) => {
+      if (c.fill) { doc.setFillColor(...c.fill); doc.rect(x, y, c.w, h, "FD"); } else doc.rect(x, y, c.w, h);
+      const ch = L[i].length * LH;
+      const oy = c.v === "top" ? PY : (h - ch) / 2;
+      if (c.p) drawLines(L[i], x + PX, y + oy, c.w - 2 * PX, c.al);
+      if (c.img) fitImg(c.img, x + 1, y + 1, c.w - 2, h - (c.imgPad || 2));
+      x += c.w;
+    });
+    y += h;
+  }
+  function bar(t, note, x = M, w = CW) {
+    const h = 5;
+    doc.setFillColor(...NAVY); doc.rect(x, y, w, h, "F");
+    doc.setFont("helvetica", "bold"); doc.setFontSize(8); doc.setTextColor(255, 255, 255);
+    doc.text(t, x + PX, y + 3.5);
+    if (note) { const tw = doc.getTextWidth(t); doc.setFont("helvetica", "italic"); doc.setFontSize(6.5); doc.setTextColor(201, 214, 229); doc.text(note, x + PX + tw + 3, y + 3.5); }
+    doc.setTextColor(0, 0, 0);
+  }
+  const section = (t, note, need = 14) => { ensure(5 + need); bar(t, note); y += 5; };
+  const gap = () => (y += 1.6);
+  const fitImg = (im, x, y0, w, h) => {
+    if (!im) return;
+    const k = Math.min(w / im.w, h / im.h), iw = im.w * k, ih = im.h * k;
+    doc.addImage(im.src, im.src.startsWith("data:image/png") ? "PNG" : "JPEG", x + (w - iw) / 2, y0 + (h - ih) / 2, iw, ih, undefined, "FAST");
+  };
+  const L_ = (s) => ({ s, b: 1 });
+  const T_ = (s) => ({ s });
+  const checks = (opts, sel, single, sep) => opts.flatMap((o, i) => { const on = single ? sel === o : (sel || []).includes(o); const out = [{ cb: o, on }]; if (sep && i < opts.length - 1) out.push({ br: 1 }); return out; });
+  const TH = (s, w, al = "center") => ({ w, p: [L_(s)], fill: LIGHT, al });
+
+  // ---------- header ----------
+  {
+    const h = 12, cols = [100, 33, 33, 24];
+    doc.rect(M, y, CW, h);
+    doc.setFont("helvetica", "bold"); doc.setFontSize(15); doc.setTextColor(...NAVY);
+    doc.text("GIORNALE DI CANTIERE", M + PX, y + 6);
+    doc.setFont("helvetica", "normal"); doc.setFontSize(7); doc.setTextColor(85, 85, 85);
+    doc.text("Direzione Lavori - Registrazione giornaliera", M + PX, y + 9.8);
+    let x = M + cols[0];
+    [["N. progressivo", S.prog], ["Data", fmtD(S.data)], ["Giorno lavorativo n.", S.giorno]].forEach(([l, v], i) => {
+      doc.rect(x, y, cols[i + 1], h);
+      doc.setFont("helvetica", "normal"); doc.setFontSize(6.5); doc.setTextColor(85, 85, 85); doc.text(l, x + PX, y + 3.2);
+      doc.setFont("helvetica", "bold"); doc.setFontSize(11); doc.setTextColor(0, 0, 0); doc.text(clean(v || ""), x + PX, y + 9.5);
+      x += cols[i + 1];
+    });
+    y += h; gap();
+  }
+
+  // ---------- 1 ----------
+  section("1 - DATI GENERALI");
+  const D = [24, 68, 30, 68];
+  const pair = (a, av, b, bv) => row([{ w: D[0], p: [L_(a)], fill: LIGHT }, { w: D[1], p: [T_(av)] }, { w: D[2], p: [L_(b)], fill: LIGHT }, { w: D[3], p: [T_(bv)] }], 5.2);
+  pair("Commessa", S.commessa, "Cantiere / indirizzo", S.cantiere);
+  pair("Committente", S.committente, "Impresa affidataria", S.impresa);
+  pair("Direttore Lavori", S.dl, "CSE", S.cse);
+  pair("Sopralluogo", `dalle ore ${S.oraDa || "____"}  alle ore ${S.oraA || "____"}`, "Presenti", S.presenti);
+  row([{ w: D[0], p: [L_("Meteo")], fill: LIGHT }, { w: 166, p: [...checks(["Sereno", "Nuvoloso", "Pioggia", "Neve", "Vento"], S.meteo), T_(`T° min/max ${S.tmin || "__"} / ${S.tmax || "__"} °C`)] }], 5.2);
+  row([{ w: D[0], p: [L_("Andamento")], fill: LIGHT }, { w: 166, p: [...checks(["Lavori regolari", "Rallentati", "Sospesi per maltempo", "Sospesi per altra causa"], S.andamento, true), ...(S.andamentoCausa ? [T_(": " + S.andamentoCausa)] : [])] }], 5.2);
+  gap();
+
+  // ---------- 2 ----------
+  section("2 - PRESENZE IN CANTIERE E MEZZI");
+  const P = [47.5, 33, 13, 29, 12, 55.5];
+  row([TH("Impresa / subappaltatore", P[0], "left"), TH("Referente", P[1]), TH("N. operai", P[2]), TH("Qualifica (S/Q/C)", P[3]), TH("Ore", P[4]), TH("Mezzi e attrezzature impiegati", P[5])]);
+  const pres = S.presenze.filter((p) => Object.values(p).some((v) => String(v).trim()));
+  (pres.length ? pres : [blankPres()]).forEach((p) => row([{ w: P[0], p: [T_(p.impresa)] }, { w: P[1], p: [T_(p.referente)] }, { w: P[2], p: [T_(p.operai)], al: "center" }, { w: P[3], p: [T_(p.qualifica)], al: "center" }, { w: P[4], p: [T_(p.ore)], al: "center" }, { w: P[5], p: [T_(p.mezzi)] }], 5));
+  row([{ w: P[0] + P[1], p: [L_("TOTALE PERSONALE PRESENTE")], fill: LIGHT, al: "right" }, { w: P[2], p: [L_(String(S.presenze.reduce((a, p) => a + (parseFloat(p.operai) || 0), 0)))], fill: LIGHT, al: "center" }, { w: P[3] + P[4] + P[5], p: [{ s: "S = specializzato - Q = qualificato - C = comune", i: 1, c: GREY }] }], 5);
+  gap();
+
+  // ---------- 3 ----------
+  section("3 - ATTIVITÀ IN CORSO");
+  row([{ w: CW, p: [...checks(["Demolizioni", "Opere edili", "Cartongessi", "Pavimentazioni", "Serramenti", "Impianti elettrici", "Impianti meccanici", "Tinteggiature", "Sistemazioni esterne", "Altro"], S.attivita), ...(S.attivitaAltro ? [T_(": " + S.attivitaAltro)] : [])] }], 5.2);
+  row([{ w: CW, v: "top", p: [L_("Descrizione attività svolte (impresa - lavorazione - zona/piano)"), { br: 1 }, T_(S.descrizione)] }], 16);
+  row([{ w: CW, v: "top", p: [L_("Forniture / materiali giunti in cantiere (materiale - fornitore - DDT)"), { br: 1 }, T_(S.forniture)] }], 8);
+  gap();
+
+  // ---------- 4 ----------
+  section("4 - VERIFICHE DELLA DIREZIONE LAVORI");
+  const V = [63.3, 63.3, 63.4];
+  row([TH("Conformità al progetto", V[0]), TH("Materiali verificati", V[1]), TH("Sicurezza cantiere", V[2])]);
+  row([
+    { w: V[0], v: "top", p: checks(["Conforme", "Conforme con osservazioni", "Non conforme"], S.conformita, true, 1) },
+    { w: V[1], v: "top", p: checks(["Conformi", "Non conformi", "Non verificati"], S.materiali, true, 1) },
+    { w: V[2], v: "top", p: checks(["Regolare", "Da migliorare", "Criticità rilevate"], S.sicurezza, true, 1) },
+  ]);
+  row([
+    { w: V[0], v: "top", p: [L_("Note: "), T_(S.confNote)] },
+    { w: V[1], v: "top", p: [L_("Materiali controllati: "), T_(S.matNote)] },
+    { w: V[2], v: "top", p: [L_("Osservazioni: "), T_(S.sicNote)] },
+  ], 8);
+  const ev = ["Prove / campionature", "Ordine di servizio", "Variante / modifica", "Visita ispettiva", "Infortunio / quasi-infortunio"];
+  row([{ w: CW, p: [L_("Eventi del giorno:  "), ...ev.flatMap((o) => { const on = S.eventi.includes(o); const lab = o === "Ordine di servizio" ? `Ordine di servizio n. ${S.odsN || "____"}` : o; return [{ cb: lab, on }]; })] }], 5.2);
+  gap();
+
+  // ---------- 5 ----------
+  section("5 - CRITICITÀ, NON CONFORMITÀ E DISPOSIZIONI DELLA D.L.");
+  const K = [8, 61, 63, 23, 20, 15];
+  row([{ w: CW, p: [L_("Richieste all'impresa:  "), ...checks(["Fornire documentazione tecnica", "Correggere lavorazione", "Aggiornare cronoprogramma", "Integrare personale", "Altro"], S.richieste)] }], 5.2);
+  row([TH("N.", K[0]), TH("Criticità / non conformità rilevata", K[1]), TH("Azione richiesta / disposizione D.L.", K[2]), TH("A cura di", K[3]), TH("Scadenza", K[4]), TH("Chiusa", K[5])]);
+  const crit = S.criticita.filter((c) => c.descr || c.azione || c.cura || c.scad);
+  (crit.length ? crit : [blankCrit()]).forEach((c, i) => row([
+    { w: K[0], p: [{ s: String(i + 1), c: GREY }], al: "center" }, { w: K[1], p: [T_(c.descr)] }, { w: K[2], p: [T_(c.azione)] },
+    { w: K[3], p: [T_(c.cura)] }, { w: K[4], p: [T_(fmtD(c.scad))], al: "center" }, { w: K[5], p: [{ cb: "", on: !!c.chiusa }], al: "center" },
+  ], 6));
+  gap();
+
+  // ---------- 6 + 7 ----------
+  ensure(5 + 20);
+  bar("6 - AVANZAMENTO LAVORI", "", M, 96); bar("7 - PROSSIMO SOPRALLUOGO", "", M + 96, 94); y += 5;
+  const A = 24, pc = (v, b) => ({ w: A, p: [{ s: (v ? v : "____") + " %", b }], al: "center" });
+  const att = (S.prossAtt || "").split("\n").map((s) => s.trim()).filter(Boolean);
+  row([TH("Opere edili", A), TH("Impianti", A), TH("Finiture", A), TH("Complessivo", A), { w: 94, p: [L_("Data prevista:  "), T_(fmtD(S.prossData) || "____ / ____ / ________")] }]);
+  row([pc(S.avEdili), pc(S.avImp), pc(S.avFin), pc(S.avTot, 1), { w: 94, v: "top", p: [L_("Attività da verificare:"), ...(att.length ? att.flatMap((a) => [{ br: 1 }, { cb: a, on: false }]) : [{ br: 1 }, T_(" ")])] }], 6);
+  const stLab = S.stato === "In ritardo" ? `In ritardo di ${S.ritardoGg || "____"} gg` : "In ritardo di ____ gg";
+  const allegLabs = [`Foto n. ${S.foto.length || "____"}`, "Verbali", "Altro" + (S.allegatiAltro ? ": " + S.allegatiAltro : "")];
+  row([
+    { w: 96, p: [L_("Stato rispetto al cronoprogramma:"), { br: 1 }, { cb: "In linea", on: S.stato === "In linea" }, { cb: "In anticipo", on: S.stato === "In anticipo" }, { cb: stLab, on: S.stato === "In ritardo" }] },
+    { w: 94, p: [L_("Allegati:  "), ...["Foto", "Verbali", "Altro"].map((o, i) => ({ cb: allegLabs[i], on: S.allegati.includes(o) }))] },
+  ]);
+  gap();
+
+  // ---------- 8 ----------
+  section("8 - FIRME", "le annotazioni sono riportate in ordine cronologico e sottoscritte", 30);
+  const F = [63.3, 63.3, 63.4];
+  row(SIGS.map(([, t], i) => TH(t, F[i])));
+  row(SIGS.map(([k], i) => ({ w: F[i], img: S.firme[k], imgPad: 2 })), 20);
+  row(SIGS.map(([k], i) => ({ w: F[i], p: [{ s: "Nome: ", c: GREY }, T_(S.nomi[k])] })), 5);
+
+  // ---------- photos ----------
+  if (S.foto.length) {
+    for (let i = 0; i < S.foto.length; i += 6) {
+      doc.addPage(); y = M;
+      const h = 10, cols = [124, 36, 30];
+      doc.rect(M, y, CW, h);
+      doc.setFont("helvetica", "bold"); doc.setFontSize(11); doc.setTextColor(...NAVY); doc.text("ALLEGATO FOTOGRAFICO AL GIORNALE DI CANTIERE", M + PX, y + 6.3);
+      let x = M + cols[0];
+      [["Data", fmtD(S.data)], ["N. progressivo", S.prog]].forEach(([l, v], j) => {
+        doc.rect(x, y, cols[j + 1], h);
+        doc.setFont("helvetica", "normal"); doc.setFontSize(6.5); doc.setTextColor(85, 85, 85); doc.text(l, x + PX, y + 3);
+        doc.setFont("helvetica", "bold"); doc.setFontSize(10); doc.setTextColor(0, 0, 0); doc.text(clean(v || ""), x + PX, y + 8.2);
+        x += cols[j + 1];
+      });
+      y += h; gap();
+      bar("DOCUMENTAZIONE FOTOGRAFICA", S.foto.length > 6 ? `foto ${i + 1}-${Math.min(i + 6, S.foto.length)} di ${S.foto.length}` : ""); y += 5;
+      const cw = CW / 2, ih = 76, caph = 6;
+      for (let j = i; j < Math.min(i + 6, S.foto.length); j += 2) {
+        [j, j + 1].forEach((n, c) => {
+          const x0 = M + c * cw;
+          doc.rect(x0, y, cw, ih);
+          if (S.foto[n]) fitImg(S.foto[n], x0 + 1, y + 1, cw - 2, ih - 2);
+          doc.setFillColor(...LIGHT); doc.rect(x0, y + ih, cw, caph, "FD");
+          if (S.foto[n]) { const ln = lay([L_(`Foto ${n + 1} - `), T_(S.foto[n].cap || "")], cw - 2 * PX); drawLines([ln[0]], x0 + PX, y + ih + 1.2, cw - 2 * PX); }
+        });
+        y += ih + caph;
+      }
+    }
+  }
+  if ((S.note2 || "").trim()) {
+    if (!S.foto.length) gap();
+    section("ANNOTAZIONI INTEGRATIVE");
+    row([{ w: CW, v: "top", p: [T_(S.note2)] }], 12);
+  }
+
+  // footer
+  const n = doc.getNumberOfPages();
+  for (let i = 1; i <= n; i++) {
+    doc.setPage(i); doc.setFont("helvetica", "normal"); doc.setFontSize(6.5); doc.setTextColor(119, 119, 119);
+    doc.text(clean(`Giornale di Cantiere - DL  -  n. ${S.prog || "-"} del ${fmtD(S.data)}  -  Pag. ${i} di ${n}`), M + CW, PH - 6, { align: "right" });
+  }
+  return doc;
+}
+
+function fileName() {
+  const c = clean(S.commessa || "cantiere").replace(/[^\w-]+/g, "_").replace(/^_+|_+$/g, "") || "cantiere";
+  return `GiornaleCantiere_${c}_${(S.data || today()).replace(/-/g, "")}_n${S.prog || "0"}.pdf`;
+}
+
+let downloads = null, lastPdf = null;
+$("#shareBtn").onclick = async () => {
+  if (!lastPdf) return;
+  try { await navigator.share({ files: [lastPdf], title: lastPdf.name }); }
+  catch (e) { if (e && e.name !== "AbortError") msg("Condivisione non riuscita. Il PDF resta nella cartella Download.", "err"); }
+};
+if (window.claude && claude.use) claude.use("downloads").then((d) => (downloads = d)).catch(() => {});
+
+$("#expBtn").onclick = async () => {
+  const b = $("#expBtn");
+  if (!window.jspdf) { msg("Il generatore PDF non si è caricato. Controlla la connessione e ricarica la pagina.", "err"); return; }
+  const missing = [];
+  if (!S.data) missing.push("data");
+  if (!S.firme.dl) missing.push("firma del DL");
+  b.disabled = true; b.textContent = "Creo il PDF…";
+  try {
+    const blob = buildPdf().output("blob"), name = fileName();
+    if (downloads) {
+      await downloads.save({ filename: name, data: blob });
+      msg("PDF salvato: " + name + (missing.length ? " (manca: " + missing.join(", ") + ")" : ""), missing.length ? "" : "ok");
+    } else if (window.claude && claude.use) {
+      msg("Il salvataggio di file non è disponibile in questa vista.", "err");
+    } else {
+      const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = name; document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(() => URL.revokeObjectURL(a.href), 60000);
+      lastPdf = new File([blob], name, { type: "application/pdf" });
+      const canShare = navigator.canShare && navigator.canShare({ files: [lastPdf] });
+      $("#shareBtn").hidden = !canShare;
+      msg("PDF salvato nella cartella Download: " + name + (canShare ? ". Con «Condividi PDF» lo mandi su Drive, mail o WhatsApp." : ""), "ok");
+    }
+  } catch (e) {
+    const c = e && e.code;
+    msg(c === "declined" ? "Salvataggio annullato." : c === "rate_limited" ? "C'è già una richiesta di salvataggio aperta. Attendi un momento e riprova." : "Il PDF non è stato creato. Riprova; se succede ancora, togli l'ultima foto aggiunta.", c === "declined" ? "" : "err");
+  } finally { b.disabled = false; b.textContent = "Esporta PDF"; }
+};
+
+/* ---------- boot ---------- */
+if ("serviceWorker" in navigator && location.protocol === "https:") navigator.serviceWorker.register("sw.js").catch(() => {});
+try { navigator.storage && navigator.storage.persist && navigator.storage.persist(); } catch {}
+(async () => {
+  renderAll();
+  if (await idb()) {
+    const d = await idbGet("draft");
+    if (d && typeof d === "object") { S = { ...fresh(), ...d, firme: { ...fresh().firme, ...(d.firme || {}) }, nomi: { ...fresh().nomi, ...(d.nomi || {}) } }; renderAll(); $("#saved").textContent = "Bozza ripresa"; }
+  }
+})();
+})();
+</script>
+
+</body></html>

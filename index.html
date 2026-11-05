@@ -75,6 +75,7 @@ input:focus-visible,textarea:focus-visible,button:focus-visible{outline:3px soli
 .bar .msg.ok{color:var(--ok)}
 .pct{display:flex;align-items:center;gap:6px}
 .pct input{text-align:right;font-variant-numeric:tabular-nums}
+.arch{display:flex;flex-direction:column;gap:8px}.arow{display:flex;gap:10px;align-items:center;flex-wrap:wrap;border:1px solid var(--line);border-radius:5px;padding:8px 10px}.arow .t{font:700 1.05rem var(--display);color:var(--ink);min-width:7ch}.arow .m{flex:1;min-width:0;color:var(--muted);font-size:.9rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.arow.cur{border-color:var(--vis)}
 .hide-file{position:absolute;width:1px;height:1px;opacity:0;pointer-events:none}
 @media (prefers-reduced-motion:no-preference){.chip,.btn{transition:background .12s,border-color .12s}}
 </style>
@@ -88,6 +89,18 @@ input:focus-visible,textarea:focus-visible,button:focus-visible{outline:3px soli
     </div>
     <div class="status" id="saved"></div>
   </header>
+
+  <section class="sheet">
+    <h2>Cantiere <small>ogni cantiere ha i suoi dati, imprese e numerazione</small></h2>
+    <div class="body">
+      <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">
+        <select id="cantSel" aria-label="Cantiere" style="flex:1 1 260px;width:auto"></select>
+        <button class="btn" id="cantNew" type="button">+ Nuovo cantiere</button>
+        <button class="btn" id="archBtn" type="button">Giornali precedenti</button>
+      </div>
+      <div id="archBox" hidden></div>
+    </div>
+  </section>
 
   <section class="sheet">
     <h2>Intestazione</h2>
@@ -268,7 +281,8 @@ let saveT;
 function save() {
   clearTimeout(saveT);
   saveT = setTimeout(async () => {
-    const ok = DB.db && (await idbSet("draft", JSON.parse(JSON.stringify(S))));
+    const ok = DB.db && CUR && (await idbSet("draft:" + CUR, JSON.parse(JSON.stringify(S))));
+    paintCantSel();
     $("#saved").textContent = ok ? "Bozza salvata alle " + new Date().toLocaleTimeString("it-IT", { hour: "2-digit", minute: "2-digit" }) : "Bozza non salvabile su questo dispositivo";
   }, 400);
 }
@@ -428,11 +442,87 @@ let armT;
 $("#newBtn").onclick = () => {
   const b = $("#newBtn");
   if (!b.dataset.armed) { b.dataset.armed = "1"; b.textContent = "Tocca di nuovo per confermare"; b.classList.add("danger"); msg("Il giornale attuale verrà svuotato. Esportalo prima, se non l'hai fatto."); armT = setTimeout(disarm, 5000); return; }
-  disarm(); S = fresh(S); renderAll(); save(); msg("Nuovo giornale n. " + S.prog + " pronto. Dati generali e imprese sono stati ricopiati.", "ok"); scrollTo(0, 0);
+  disarm(); newGiornale();
 };
 function disarm() { clearTimeout(armT); const b = $("#newBtn"); delete b.dataset.armed; b.textContent = "Nuovo giornale"; b.classList.remove("danger"); }
 $("#addPres").onclick = () => { S.presenze.push(blankPres()); renderPres(); save(); };
 $("#addCrit").onclick = () => { S.criticita.push(blankCrit()); renderCrit(); save(); };
+/* ---------- cantieri e archivio ---------- */
+let META = { cantieri: [], current: null }, CUR = null;
+const LABELS = {};
+const uid = () => Math.random().toString(36).slice(2, 10) + Date.now().toString(36).slice(-4);
+const dIt = (d) => (d ? d.split("-").reverse().join("/") : "");
+const hasContent = (x) => !!(x && (x.descrizione || (x.firme && x.firme.dl) || (x.foto || []).length || (x.presenze || []).some((p) => p.operai) || (x.attivita || []).length));
+const labelOf = (x) => [x.commessa, x.cantiere].filter(Boolean).join(" - ") || "Cantiere senza nome";
+async function getArch(id) { return (DB.db && (await idbGet("arch:" + id))) || []; }
+async function archive(snap) {
+  if (!DB.db || !CUR || !hasContent(snap)) return;
+  const a = await getArch(CUR);
+  const i = a.findIndex((x) => String(x.prog) === String(snap.prog));
+  const copy = JSON.parse(JSON.stringify(snap)); copy.archived = Date.now();
+  if (i >= 0) a[i] = copy; else a.push(copy);
+  a.sort((x, y) => (parseInt(y.prog, 10) || 0) - (parseInt(x.prog, 10) || 0));
+  await idbSet("arch:" + CUR, a);
+}
+async function saveMeta() { if (DB.db) await idbSet("meta", META); }
+function paintCantSel() {
+  if (CUR) LABELS[CUR] = labelOf(S);
+  const sel = $("#cantSel"); sel.innerHTML = "";
+  META.cantieri.forEach((id) => { const o = document.createElement("option"); o.value = id; o.textContent = LABELS[id] || "Cantiere"; sel.appendChild(o); });
+  sel.value = CUR || "";
+}
+async function flush() { clearTimeout(saveT); if (DB.db && CUR) await idbSet("draft:" + CUR, JSON.parse(JSON.stringify(S))); }
+function normalize(d) { return { ...fresh(), ...d, firme: { ...fresh().firme, ...(d.firme || {}) }, nomi: { ...fresh().nomi, ...(d.nomi || {}) } }; }
+async function loadCantiere(id) {
+  CUR = id; META.current = id; await saveMeta();
+  const d = DB.db && (await idbGet("draft:" + id));
+  S = d && typeof d === "object" ? normalize(d) : fresh();
+  $("#archBox").hidden = true; renderAll(); paintCantSel();
+}
+async function newGiornale() {
+  await archive(S);
+  const maxProg = Math.max(parseInt(S.prog, 10) || 0, ...(await getArch(CUR)).map((x) => parseInt(x.prog, 10) || 0));
+  const prevGiorno = S.giorno;
+  S = fresh(S); S.prog = String(maxProg + 1); S.data = today();
+  S.giorno = prevGiorno ? String((parseInt(prevGiorno, 10) || 0) + 1) : "";
+  renderAll(); save(); if (!$("#archBox").hidden) renderArch();
+  msg("Nuovo giornale n. " + S.prog + " del " + dIt(S.data) + ". Il precedente è in «Giornali precedenti».", "ok"); scrollTo(0, 0);
+}
+$("#cantSel").onchange = async () => { await flush(); await archive(S); await loadCantiere($("#cantSel").value); msg("Aperto il cantiere " + (LABELS[CUR] || "") + ".", "ok"); };
+$("#cantNew").onclick = async () => {
+  await flush(); await archive(S);
+  const id = uid(); META.cantieri.push(id); LABELS[id] = "Nuovo cantiere";
+  await loadCantiere(id); save();
+  msg("Nuovo cantiere creato: compila i dati generali, resteranno per i giornali successivi.", "ok");
+  $("#commessa").focus();
+};
+$("#archBtn").onclick = () => { const b = $("#archBox"); b.hidden = !b.hidden; if (!b.hidden) renderArch(); };
+function arow(t, m, cls) {
+  const r = document.createElement("div"); r.className = "arow" + (cls ? " " + cls : "");
+  const a = document.createElement("span"); a.className = "t"; a.textContent = t;
+  const b = document.createElement("span"); b.className = "m"; b.textContent = m;
+  r.append(a, b); return r;
+}
+async function renderArch() {
+  const box = $("#archBox"); box.innerHTML = "";
+  const list = (await getArch(CUR)).filter((x) => String(x.prog) !== String(S.prog));
+  const wrap = document.createElement("div"); wrap.className = "arch";
+  wrap.appendChild(arow("n. " + (S.prog || "-"), "aperto ora · " + dIt(S.data), "cur"));
+  list.forEach((g) => {
+    const r = arow("n. " + (g.prog || "-"), dIt(g.data) + (g.descrizione ? " · " + g.descrizione.replace(/\s+/g, " ").slice(0, 90) : ""));
+    const open = document.createElement("button"); open.type = "button"; open.className = "btn small"; open.textContent = "Apri";
+    open.onclick = async () => { await archive(S); S = normalize(JSON.parse(JSON.stringify(g))); delete S.archived; renderAll(); save(); renderArch(); msg("Riaperto il giornale n. " + S.prog + ": puoi modificarlo o riesportarlo.", "ok"); scrollTo(0, 0); };
+    const del = document.createElement("button"); del.type = "button"; del.className = "btn small ghost"; del.textContent = "Elimina";
+    del.onclick = async () => {
+      if (!del.dataset.armed) { del.dataset.armed = "1"; del.textContent = "Conferma"; del.classList.add("danger"); return; }
+      await idbSet("arch:" + CUR, (await getArch(CUR)).filter((x) => String(x.prog) !== String(g.prog))); renderArch();
+    };
+    r.append(open, del); wrap.appendChild(r);
+  });
+  if (!list.length) { const e = document.createElement("div"); e.className = "empty"; e.textContent = "Nessun giornale precedente per questo cantiere. Finiscono qui quando tocchi «Nuovo giornale» o esporti un PDF."; wrap.appendChild(e); }
+  box.appendChild(wrap);
+}
+
 function renderAll() { bindInputs(); renderPres(); renderCrit(); renderPhotos(); renderSigs(); }
 
 /* ================= PDF ================= */
@@ -699,6 +789,7 @@ $("#expBtn").onclick = async () => {
   b.disabled = true; b.textContent = "Creo il PDF…";
   try {
     const blob = buildPdf().output("blob"), name = fileName();
+    archive(S);
     if (downloads) {
       await downloads.save({ filename: name, data: blob });
       msg("PDF salvato: " + name + (missing.length ? " (manca: " + missing.join(", ") + ")" : ""), missing.length ? "" : "ok");
@@ -724,9 +815,18 @@ try { navigator.storage && navigator.storage.persist && navigator.storage.persis
 (async () => {
   renderAll();
   if (await idb()) {
-    const d = await idbGet("draft");
-    if (d && typeof d === "object") { S = { ...fresh(), ...d, firme: { ...fresh().firme, ...(d.firme || {}) }, nomi: { ...fresh().nomi, ...(d.nomi || {}) } }; renderAll(); $("#saved").textContent = "Bozza ripresa"; }
-  }
+    const m = await idbGet("meta");
+    if (m && Array.isArray(m.cantieri) && m.cantieri.length) META = m;
+    else {
+      const id = uid(); META = { cantieri: [id], current: id };
+      const old = await idbGet("draft");
+      if (old && typeof old === "object") await idbSet("draft:" + id, old);
+      await saveMeta();
+    }
+    for (const id of META.cantieri) { const d = await idbGet("draft:" + id); LABELS[id] = d ? labelOf(d) : "Cantiere"; }
+    await loadCantiere(META.current && META.cantieri.includes(META.current) ? META.current : META.cantieri[0]);
+    $("#saved").textContent = "Bozza ripresa";
+  } else { paintCantSel(); }
 })();
 })();
 </script>
